@@ -30,7 +30,7 @@ library(tidyverse)
 library(tigris)
 ```
 
-We have talked about data manipulations before where we can clean and transform tabular data in a proper format. How about spatial data? In this lab, we will introduce some commonly used vector operation functions to clean or change spatial data set based on their geometry. To be more specific, let's examine the service of major hospitals in Chicago. How many potential population they can serve under emergencies? Is there any pattern of total confirmed COVID-19 cases throughout time in Chicago? 
+We have talked about data manipulations before where we can clean and transform tabular data in a proper format. How about spatial data? In this lab, we will introduce some commonly used vector operation functions to clean or change spatial data based on their geometry. To be more specific, let's examine the service of major hospitals in Chicago. How many potential population they can serve under emergency? Is there any pattern of total confirmed COVID-19 cases throughout time in Chicago? 
 
 
 ## 1. Demographic data for city of Chicago
