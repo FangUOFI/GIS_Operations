@@ -27,6 +27,7 @@ library(tmap)
 library(tidycensus)
 library(tidyverse)
 library(tigris)
+library(gifski)
 
 ```
 
@@ -38,8 +39,10 @@ We have talked about data manipulations before where we can clean and transform 
 Let's first examine the demographic information for the city of Chicago. We can download the data directly using the `tidycensus` package. We all know that the `get_acs` function can download the data at state / county / tract / zcta levels. So how to move forward analyzing data within the Chicago city boundary only? First let's get the demographic data at Cook county. We keep the geometry as true in order to create maps. 
 
 ```{r eval=F}
-#census_api_key("Put your key here")
+#census_api_key("Your key here")
 demo_tract <- get_acs(geography = 'tract',variables = c(totPop = "B01001_001",Hispanic ="B03003_003", NOTHispanic = "B03003_002",White = "B02001_002",Afr = "B02001_003",Asian = "B02001_005"), year = 2018, state = 'IL', county="Cook", geometry = T, output="wide")
+
+demo_tract <- demo_tract[!is.na(st_dimension(demo_tract)),]
 
 tm_shape(demo_tract)+tm_polygons(col = "totPopE")
 ```

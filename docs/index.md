@@ -28,6 +28,7 @@ library(tmap)
 library(tidycensus)
 library(tidyverse)
 library(tigris)
+library(gifski)
 ```
 
 We have talked about data manipulations before where we can clean and transform tabular data in a proper format. How about spatial data? In this lab, we will introduce some commonly used vector operation functions to clean or change spatial data based on their geometry. To be more specific, let's examine the service of major hospitals in Chicago. How many potential population they can serve under emergency? Is there any pattern of total confirmed COVID-19 cases throughout time in Chicago? 
@@ -39,8 +40,10 @@ Let's first examine the demographic information for the city of Chicago. We can 
 
 
 ```r
-#census_api_key("Put your key here")
+#census_api_key("Your key here")
 demo_tract <- get_acs(geography = 'tract',variables = c(totPop = "B01001_001",Hispanic ="B03003_003", NOTHispanic = "B03003_002",White = "B02001_002",Afr = "B02001_003",Asian = "B02001_005"), year = 2018, state = 'IL', county="Cook", geometry = T, output="wide")
+
+demo_tract <- demo_tract[!is.na(st_dimension(demo_tract)),]
 
 tm_shape(demo_tract)+tm_polygons(col = "totPopE")
 ```
