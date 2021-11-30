@@ -12,9 +12,10 @@ output:
 ---
 
 ## Objectives
-1. Read in vector data in R
-2. Create maps: static and interactive 
-3. Manipulate spatial data attributes 
+1. Subset census data for a specific census-designated place
+2. Perform spatial join operation 
+3. Transform coordinate system of vector layers 
+4. Generate animated maps as gif file
 
 ## Overview 
 
@@ -29,7 +30,7 @@ library(tidyverse)
 library(tigris)
 ```
 
-We have talked about data manipulations before where we can clean and transform tabular data in a proper format. How about spatial data? In this lab, we will introduce some commonly used vector operation functions to clean or change spatial data set based on their geometry. To be more specific, let's examine the service of major hospitals in Chicago. How many potential population they can serve under emergencies? 
+We have talked about data manipulations before where we can clean and transform tabular data in a proper format. How about spatial data? In this lab, we will introduce some commonly used vector operation functions to clean or change spatial data set based on their geometry. To be more specific, let's examine the service of major hospitals in Chicago. How many potential population they can serve under emergencies? Is there any pattern of total confirmed COVID-19 cases throughout time in Chicago? 
 
 
 ## 1. Demographic data for city of Chicago
@@ -41,7 +42,7 @@ Let's first examine the demographic information for the city of Chicago. We can 
 #census_api_key("Put your key here")
 demo_tract <- get_acs(geography = 'tract',variables = c(totPop = "B01001_001",Hispanic ="B03003_003", NOTHispanic = "B03003_002",White = "B02001_002",Afr = "B02001_003",Asian = "B02001_005"), year = 2018, state = 'IL', county="Cook", geometry = T, output="wide")
 
-tm_shape(demo_tract)+tm_polygons(col = "totPop18E")
+tm_shape(demo_tract)+tm_polygons(col = "totPopE")
 ```
  
 How can we subset tracts within Chicago only? Another package called `tigris` will allow you to bring in census geographic boundaries at different levels. Make sure you installed this package first before using. Below is a comprehensive list of all the core-based statistical areas included in this package. 
@@ -136,13 +137,55 @@ Now we can perform the spatial join process. However, for each hospital buffer, 
 
 
 ```r
-chicago_tract_hospital <- st_join(hospital_1mile,tract_new,join = st_intersects, left=FALSE) %>% group_by(BLDGID) %>% summarise(Totalpop=sum(totPop18E))
+chicago_tract_hospital <- st_join(hospital_1mile,tract_new,join = st_intersects, left=FALSE) %>% group_by(BLDGID) %>% summarise(Totalpop=sum(totPopE))
 ```
 
 Now we can create a thematic map showing total potential population each hospital can serve within 1-mile straight line distance. 
+
 
 ```r
 tm_shape(Chicago_outline) +
     tm_polygons(border.col = "red") +tm_shape(chicago_tract_hospital)+tm_polygons(col="Totalpop",style = "quantile")
 ```
 
+## 3. COVID-19 cases in Chicago as an animated map
+
+Now let's further examine how does the total confirmed COVID-19 case change throughout time in Chicago. First download the COVID-19 Cases, Tests, and Deaths by ZIP Code data from [here](https://data.cityofchicago.org/Health-Human-Services/COVID-19-Cases-Tests-and-Deaths-by-ZIP-Code/yhhz-zm2v) as a shapefile, then load the data in R. 
+
+```r
+chicagoZips_covid <- st_read("data/COVID_zip.shp")
+```
+
+The data provides weekly (from March 2020 till now) confirmed cases (`cases_week`) for each home ZIP Code of the cases and people tested. Use the `head` function to preview the data type and key columns. 
+
+
+```r
+head(chicagoZips_covid)
+```
+
+
+
+This shapefile includes spatial points instead of polygons. Before generating the animated map, let's first aggregate number of cases for each week. 
+
+
+```r
+week_covid <- chicagoZips_covid %>% group_by(date_week_) %>% summarise(cases=sum(cases_week, na.rm = T))
+```
+
+Then we can use `tmap` functions to further display number of cases for each zip code point. The size of the point represents number of cases. Use `tm_facets` to generate a set of separate maps by each week.  The `free.coords = FALSE` helps to maintain the map extent for each map layer. Save the entire map object as `COVID_Weekly_ani`. 
+
+
+```r
+COVID_Weekly_ani <- tm_shape(Chicago_outline) +tm_polygons(col = "red") +tm_shape(chicago_tract_hospital)+tm_polygons(col="Totalpop",style = "quantile")+
+    tm_shape(week_covid)+ tm_dots(size="cases", col="blue")+tm_facets(along = "date_week_", free.coords = FALSE)
+```
+
+Next we can use the `tmap_animation` function to generate a `.gif` file locally as an animated map. The input is the `tmap` object we created above. Set `delay = 50` which represents the delay time between each image in 1/100th of a second. Once done, open the .gif file locally to check the results. 
+
+
+```r
+tmap_animation(COVID_Weekly_ani, filename = "weekly_covid.gif", delay = 50)
+```
+
+
+![](data/weekly_covid.gif)

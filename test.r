@@ -89,3 +89,11 @@ chicago_tract_hospital <- st_join(hospital_1mile,tract_new,join = st_intersects,
 tm_shape(Chicago_outline) +
     tm_polygons(col = "red") +tm_shape(chicago_tract_hospital)+tm_polygons(col="Totalpop",style = "quantile")+
     tm_shape(hospital)+ tm_dots(size=0.02)
+
+week_covid <- chicagoZips %>% group_by(date_week_) %>% summarise(cases=sum(cases_week, na.rm = T))
+
+ani <- tm_shape(Chicago_outline) +
+    tm_polygons(col = "red") +tm_shape(chicago_tract_hospital)+tm_polygons(col="Totalpop",style = "quantile")+
+    tm_shape(week_covid)+ tm_dots(size="cases", col="blue")+tm_facets(along = "date_week_", free.coords = FALSE)
+
+tmap_animation(ani, filename = "ani_Test.gif", delay = 25)
