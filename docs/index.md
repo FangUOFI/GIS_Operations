@@ -15,7 +15,7 @@ output:
 1. Subset census data for a specific census-designated place
 2. Perform spatial join operation 
 3. Transform coordinate system of vector layers 
-4. Generate animated maps as gif file
+4. Generate animated maps as a gif file
 
 ## Overview 
 
