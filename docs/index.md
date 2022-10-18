@@ -1,5 +1,5 @@
 ---
-title: "GIS data operationi in R"
+title: "GIS data operation in R"
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
